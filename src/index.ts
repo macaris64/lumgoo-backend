@@ -3,6 +3,7 @@ import express from 'express';
 import {connectDB} from "./db";
 
 import userRouter from './routes/user.routes';
+import registerRouter from './routes/registration.routes';
 
 dotenv.config();
 const app = express();
@@ -11,6 +12,7 @@ connectDB();
 
 app.use(express.json());
 app.use('/api', userRouter);
+app.use('/api', registerRouter);
 
 app.get('/', (req, res) => {
   res.send('Hello from the backend!');
