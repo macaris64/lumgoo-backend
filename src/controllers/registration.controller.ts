@@ -6,11 +6,15 @@ import User from "../models/user.model";
 export const register = async (req: Request, res: Response) => {
     try {
         const user = new User(req.body);
-        const existingUser = await User.findOne({ email: req.body.email });
+        const existingUser = await User.findOne({
+          $or: [
+            { email: req.body.email },
+            { username: req.body.username }
+          ]
+        });
         if (existingUser) {
-            return res.status(409).json({ message: 'Email already in use' });
+            return res.status(409).json({ message: 'Email or username already in use' });
         }
-        console.log(req.body)
         await user.save();
 
         const token = generateToken(user._id);

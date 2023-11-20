@@ -31,6 +31,7 @@ const userSchema: Schema <IUser> = new mongoose.Schema({
     },
     fullname: {
         type: String,
+        default: ''
     },
     createdAt: {
         type: Date,
