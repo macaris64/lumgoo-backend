@@ -2,13 +2,15 @@ import dotenv from 'dotenv';
 import express from 'express';
 import {connectDB} from "./db";
 
+import userRouter from './routes/user.routes';
+
 dotenv.config();
 const app = express();
 const port = process.env.PORT || 3001;
-// Connect to MongoDB
 connectDB();
 
-// The rest of your imports and application logic
+app.use(express.json());
+app.use('/api', userRouter);
 
 app.get('/', (req, res) => {
   res.send('Hello from the backend!');
