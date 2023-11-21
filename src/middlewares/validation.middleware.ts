@@ -47,6 +47,10 @@ export const validateLogin = (req: Request, res: Response, next: NextFunction) =
         errors.push('Password is required');
     }
 
+    if (password.length < 6) {
+        errors.push('Password must be at least 6 characters long');
+    }
+
     if (errors.length > 0) {
         return res.status(400).json({ errors });
     }
