@@ -6,6 +6,7 @@ import {connectDB} from "./db";
 import userRouter from './routes/user.routes';
 import registerRouter from './routes/registration.routes';
 import {errorHandler} from "./middlewares/errorHandler.middleware";
+import {apiKeyMiddleware} from "./middlewares/apiKey.middleware";
 
 dotenv.config();
 const app = express();
@@ -14,6 +15,7 @@ connectDB();
 
 app.use(express.json());
 app.use(cors());
+app.use(apiKeyMiddleware);
 app.use('/api', userRouter);
 app.use('/api', registerRouter);
 
