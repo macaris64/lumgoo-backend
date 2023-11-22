@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 
 export const validateRegistration = (req: Request, res: Response, next: NextFunction) => {
     const errors: string[] = [];
-    const { username, email, password } = req.body;
+    const { username, email, password, passwordConfirmation } = req.body;
 
     if (!username) {
         errors.push('Username is required');
@@ -18,6 +18,8 @@ export const validateRegistration = (req: Request, res: Response, next: NextFunc
         errors.push('Password is required');
     } else if (password.length < 6) {
         errors.push('Password must be at least 6 characters long');
+    } else if (password !== passwordConfirmation) {
+        errors.push('Passwords do not match');
     }
 
     if (errors.length > 0) {

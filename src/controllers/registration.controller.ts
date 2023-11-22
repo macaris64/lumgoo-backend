@@ -1,11 +1,13 @@
 import { Request, Response } from 'express';
 
 import { generateToken, verifyToken } from '../utils/jwt.utils';
-import User from "../models/user.model";
+import User, {UserResponse} from "../models/user.model";
 
 export const register = async (req: Request, res: Response) => {
     try {
-        const user = new User(req.body);
+        let user: UserResponse;
+        let token: string;
+        const _user = new User(req.body);
         const existingUser = await User.findOne({
           $or: [
             { email: req.body.email },
@@ -15,9 +17,17 @@ export const register = async (req: Request, res: Response) => {
         if (existingUser) {
             return res.status(409).json({ message: 'Email or username already in use' });
         }
-        await user.save();
+        await _user.save();
 
-        const token = generateToken(user._id);
+        token = generateToken(_user._id);
+
+        user = {
+            id: (_user._id).toString(),
+            username: _user.username,
+            email: _user.email,
+            fullname: _user.fullname,
+        }
+
         res.status(201).json({ user, token });
     } catch (error) {
         res.status(500).json({ message: 'Internal Server Error' });
@@ -26,14 +36,25 @@ export const register = async (req: Request, res: Response) => {
 
 export const login = async (req: Request, res: Response) => {
     try {
-        const { email, password } = req.body;
-        const user = await User.findOne({ email });
+        let user: UserResponse;
+        let token: string;
 
-        if (!user || !(await user.comparePassword(password))) {
+        const { email, password } = req.body;
+        const _user = await User.findOne({ email });
+
+        if (!_user || !(await _user.comparePassword(password))) {
             return res.status(401).json({ message: 'Invalid credentials' });
         }
 
-        const token = generateToken(user._id);
+        token = generateToken(_user._id);
+
+        user = {
+            id: (_user._id).toString(),
+            username: _user.username,
+            email: _user.email,
+            fullname: _user.fullname,
+        }
+
         res.json({ user, token });
     } catch (error) {
         res.status(500).json({ message: 'Internal Server Error' });

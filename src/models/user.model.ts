@@ -11,6 +11,13 @@ interface IUser extends Document {
     comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
+export interface UserResponse {
+    id: string,
+    username: string,
+    email: string,
+    fullname: string,
+}
+
 const userSchema: Schema <IUser> = new mongoose.Schema({
     username: {
         type: String,
