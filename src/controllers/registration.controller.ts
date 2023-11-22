@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 
-import { generateToken } from '../utils/jwt.utils';
+import { generateToken, verifyToken } from '../utils/jwt.utils';
 import User from "../models/user.model";
 
 export const register = async (req: Request, res: Response) => {
@@ -35,6 +35,21 @@ export const login = async (req: Request, res: Response) => {
 
         const token = generateToken(user._id);
         res.json({ user, token });
+    } catch (error) {
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+}
+
+export const verify = async (req: Request, res: Response) => {
+    try {
+        const { token } = req.body;
+        try {
+            verifyToken(token);
+            res.send({ valid: true });
+        }
+        catch (error) {
+            return res.status(401).json({ message: 'Invalid token' });
+        }
     } catch (error) {
         res.status(500).json({ message: 'Internal Server Error' });
     }

@@ -32,7 +32,6 @@ const validateEmail = (email: string): boolean => {
     return re.test(String(email).toLowerCase());
 };
 
-
 export const validateLogin = (req: Request, res: Response, next: NextFunction) => {
     const errors: string[] = [];
     const { email, password } = req.body;
@@ -49,6 +48,21 @@ export const validateLogin = (req: Request, res: Response, next: NextFunction) =
 
     if (password.length < 6) {
         errors.push('Password must be at least 6 characters long');
+    }
+
+    if (errors.length > 0) {
+        return res.status(400).json({ errors });
+    }
+
+    next();
+}
+
+export const validateVerification = (req: Request, res: Response, next: NextFunction) => {
+    const errors: string[] = [];
+    const { token } = req.body;
+
+    if (!token) {
+        errors.push('Token is required');
     }
 
     if (errors.length > 0) {
