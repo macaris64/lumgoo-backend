@@ -5,6 +5,7 @@ import {connectDB} from "./db";
 
 import userRouter from './routes/user.routes';
 import registerRouter from './routes/registration.routes';
+import {errorHandler} from "./middlewares/errorHandler.middleware";
 
 dotenv.config();
 const app = express();
@@ -31,6 +32,8 @@ app.get('/healthcheck', (req, res) => {
     };
     res.status(200).json(healthcheck);
 });
+
+app.use(errorHandler);
 
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);

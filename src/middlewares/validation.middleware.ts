@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import {APIError} from "../utils/errors";
 
 export const validateRegistration = (req: Request, res: Response, next: NextFunction) => {
     const errors: string[] = [];
@@ -23,7 +24,7 @@ export const validateRegistration = (req: Request, res: Response, next: NextFunc
     }
 
     if (errors.length > 0) {
-        return res.status(400).json({ errors });
+        return res.status(401).json({ errors });
     }
 
     next();
@@ -35,25 +36,29 @@ const validateEmail = (email: string): boolean => {
 };
 
 export const validateLogin = (req: Request, res: Response, next: NextFunction) => {
-    const errors: string[] = [];
-    const { email, password } = req.body;
+    try {
+        const errors: string[] = [];
+        const { email, password } = req.body;
 
-    if (!email) {
-        errors.push('Email is required');
-    } else if (!validateEmail(email)) {
-        errors.push('Invalid email format');
-    }
+        if (!email) {
+            errors.push('Email is required');
+        } else if (!validateEmail(email)) {
+            errors.push('Invalid email format');
+        }
 
-    if (!password) {
-        errors.push('Password is required');
-    }
+        if (!password) {
+            errors.push('Password is required');
+        }
 
-    if (password.length < 6) {
-        errors.push('Password must be at least 6 characters long');
-    }
+        if (password.length < 6) {
+            errors.push('Password must be at least 6 characters long');
+        }
 
-    if (errors.length > 0) {
-        return res.status(400).json({ errors });
+        if (errors.length > 0) {
+            throw new APIError(401, 'Invalid credentials');
+        }
+    } catch (error) {
+        next(error);
     }
 
     next();

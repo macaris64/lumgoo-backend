@@ -1,7 +1,8 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 
 import { generateToken, verifyToken } from '../utils/jwt.utils';
 import User, {UserResponse} from "../models/user.model";
+import {APIError} from "../utils/errors";
 
 export const register = async (req: Request, res: Response) => {
     try {
@@ -34,7 +35,7 @@ export const register = async (req: Request, res: Response) => {
     }
 }
 
-export const login = async (req: Request, res: Response) => {
+export const login = async (req: Request, res: Response, next: NextFunction) => {
     try {
         let user: UserResponse;
         let token: string;
@@ -43,10 +44,14 @@ export const login = async (req: Request, res: Response) => {
         const _user = await User.findOne({ email });
 
         if (!_user || !(await _user.comparePassword(password))) {
-            return res.status(401).json({ message: 'Invalid credentials' });
+            throw new APIError(401, 'Invalid credentials')
         }
 
-        token = generateToken(_user._id);
+        try {
+            token = generateToken(_user._id);
+        } catch (error) {
+            throw new APIError(500, 'Internal Server Error')
+        }
 
         user = {
             id: (_user._id).toString(),
@@ -57,7 +62,7 @@ export const login = async (req: Request, res: Response) => {
 
         res.json({ user, token });
     } catch (error) {
-        res.status(500).json({ message: 'Internal Server Error' });
+        next(error);
     }
 }
 
