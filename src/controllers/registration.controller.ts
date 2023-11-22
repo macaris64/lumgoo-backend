@@ -4,9 +4,8 @@ import { generateToken, verifyToken } from '../utils/jwt.utils';
 import User, {UserResponse} from "../models/user.model";
 import {APIError} from "../utils/errors";
 
-export const register = async (req: Request, res: Response) => {
+export const register = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        let user: UserResponse;
         let token: string;
         const _user = new User(req.body);
         const existingUser = await User.findOne({
@@ -16,13 +15,21 @@ export const register = async (req: Request, res: Response) => {
           ]
         });
         if (existingUser) {
-            return res.status(409).json({ message: 'Email or username already in use' });
+            throw new APIError(409, 'Email or username already in use')
         }
-        await _user.save();
+        try {
+            await _user.save();
+        } catch (error) {
+            throw new APIError(500, 'Internal Server Error')
+        }
 
-        token = generateToken(_user._id);
+        try {
+            token = generateToken(_user._id);
+        } catch (error) {
+            throw new APIError(500, 'Internal Server Error')
+        }
 
-        user = {
+        const user: UserResponse = {
             id: (_user._id).toString(),
             username: _user.username,
             email: _user.email,
@@ -31,13 +38,12 @@ export const register = async (req: Request, res: Response) => {
 
         res.status(201).json({ user, token });
     } catch (error) {
-        res.status(500).json({ message: 'Internal Server Error' });
+        next(error);
     }
 }
 
 export const login = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        let user: UserResponse;
         let token: string;
 
         const { email, password } = req.body;
@@ -53,7 +59,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
             throw new APIError(500, 'Internal Server Error')
         }
 
-        user = {
+        const user: UserResponse = {
             id: (_user._id).toString(),
             username: _user.username,
             email: _user.email,
@@ -66,7 +72,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
     }
 }
 
-export const verify = async (req: Request, res: Response) => {
+export const verify = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { token } = req.body;
         try {
@@ -74,9 +80,9 @@ export const verify = async (req: Request, res: Response) => {
             res.send({ valid: true });
         }
         catch (error) {
-            return res.status(401).json({ message: 'Invalid token' });
+            throw new APIError(401, 'Invalid token')
         }
     } catch (error) {
-        res.status(500).json({ message: 'Internal Server Error' });
+        next(error);
     }
 }
