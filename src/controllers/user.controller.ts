@@ -1,66 +1,108 @@
-import { Request, Response } from 'express';
+import {NextFunction, Request, Response} from 'express';
 import User from '../models/user.model';
+import { MongoServerError } from 'mongodb';
 import mongoose from "mongoose";
+import {APIError} from "../utils/errors";
 
-export const createUser = async (req: Request, res: Response) => {
+export const createUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const email = req.body.email;
-        const existingUser = await User.findOne({ email: req.body.email });
+        const username = req.body.username;
+        const existingUser = await User.findOne({
+            $or: [
+                { email: email },
+                { username: username }
+            ]
+        });
         if (existingUser) {
-            return res.status(409).json({ message: 'Email already in use' });
+            throw new APIError(409, 'Email or username already in use');
         }
-        const newUser = new User(req.body);
-        await newUser.save();
-        res.status(201).json(newUser);
+        try {
+            const newUser = new User(req.body);
+            await newUser.save();
+            res.status(201).json(newUser);
+        } catch (error) {
+            if (error instanceof mongoose.Error.ValidationError) {
+                throw new APIError(422, 'Validation Error');
+            }else {
+                throw new APIError(500, 'Internal Server Error');
+            }
+        }
     } catch (error) {
-        if (error instanceof mongoose.Error.ValidationError) {
-            return res.status(422).json({ message: error.message });
-        }
-        return res.status(500).json({ message: 'Internal Server Error' });
+        next(error);
     }
 };
 
-export const getAllUsers = async (req: Request, res: Response) => {
+export const getAllUsers = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const users = await User.find();
-        res.status(200).json(users);
+        const page = parseInt(req.query.page as string);
+        const limit = parseInt(req.query.limit as string);
+        const skipIndex = (page - 1) * limit;
+        try {
+            const users = await User.find().limit(limit).skip(skipIndex);
+            res.status(200).json(users);
+        } catch (error) {
+            throw new APIError(500, 'Internal Server Error');
+        }
     } catch (error) {
-        const err = error as Error
-        res.status(500).json({ message: err.message });
+        next(error);
     }
 };
 
-export const getUserById = async (req: Request, res: Response) => {
+export const getUserById = async (req: Request, res: Response, next: NextFunction) => {
     try {
+        if (!mongoose.Types.ObjectId.isValid(req.params.id))
+            throw new APIError(422, 'Invalid ID')
+        if(!req.params.id)
+            throw new APIError(400, 'ID is required')
+
         const user = await User.findById(req.params.id);
-        if (!user) return res.status(404).json({ message: 'User not found' });
+        if (!user)
+            throw new APIError(404, 'User not found')
+
         res.status(200).json(user);
     } catch (error) {
-        const err = error as Error;
-        res.status(500).json({ message: err.message });
+        next(error);
     }
 };
 
-export const updateUser = async (req: Request, res: Response) => {
+export const updateUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const user = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
-        if (!user) return res.status(404).json({ message: 'User not found' });
+        if (!mongoose.Types.ObjectId.isValid(req.params.id))
+            throw new APIError(422, 'Invalid ID')
+        if(!req.params.id)
+            throw new APIError(400, 'ID is required')
+
+        req.body.modifiedAt = Date.now();
+        const user = await User.findByIdAndUpdate(req.params.id, req.body, {new: true});
+        if (!user)
+            throw new APIError(404, 'User not found')
+
         res.status(200).json(user);
     } catch (error) {
-        if (error instanceof mongoose.Error.ValidationError) {
-            res.status(422).json({ message: error.message });
+        next(error);
+    }
+};
+
+export const deleteUser = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (!mongoose.Types.ObjectId.isValid(req.params.id))
+            throw new APIError(422, 'Invalid ID')
+        if(!req.params.id)
+            throw new APIError(400, 'ID is required')
+
+        const user = await User.findById(req.params.id);
+        if (!user)
+            throw new APIError(404, 'User not found')
+        try {
+            user.set({deletedAt: Date.now()});
+            user.set({isDeleted: true});
+            await user.save();
+            res.status(204).json({});
+        } catch (error) {
+            throw new APIError(500, 'Internal Server Error');
         }
-        res.status(500).json({ message: 'Internal Server Error' });
-    }
-};
-
-export const deleteUser = async (req: Request, res: Response) => {
-    try {
-        const user = await User.findByIdAndDelete(req.params.id);
-        if (!user) return res.status(404).json({ message: 'User not found' });
-        res.status(200).json({ message: 'User deleted' });
     } catch (error) {
-        const err = error as Error;
-        res.status(500).json({ message: err.message });
+        next(error);
     }
 };

@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import {APIError} from "../utils/errors";
+import {APIError} from "../../utils/errors";
+import {validateEmail} from "./validate.middleware";
 
 export const validateRegistration = (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -23,7 +24,6 @@ export const validateRegistration = (req: Request, res: Response, next: NextFunc
         } else if (password !== passwordConfirmation) {
             errors.push('Passwords do not match');
         }
-
         if (errors.length > 0) {
             throw new APIError(422, 'Validation error');
         }
@@ -32,11 +32,6 @@ export const validateRegistration = (req: Request, res: Response, next: NextFunc
     }
 
     next();
-};
-
-const validateEmail = (email: string): boolean => {
-    const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-    return re.test(String(email).toLowerCase());
 };
 
 export const validateLogin = (req: Request, res: Response, next: NextFunction) => {
@@ -84,5 +79,11 @@ export const validateVerification = (req: Request, res: Response, next: NextFunc
         next(error);
     }
 
+    next();
+}
+
+export const validateUpdateUser = (req: Request, res: Response, next: NextFunction) => {
+    delete req.body._id;
+    delete req.body.password;
     next();
 }

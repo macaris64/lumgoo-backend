@@ -5,6 +5,8 @@ import {connectDB} from "./db";
 
 import userRouter from './routes/user.routes';
 import registerRouter from './routes/registration.routes';
+import actorRouter from './routes/actor.routes';
+
 import {errorHandler} from "./middlewares/errorHandler.middleware";
 import {apiKeyMiddleware} from "./middlewares/apiKey.middleware";
 
@@ -18,6 +20,7 @@ app.use(cors());
 app.use(apiKeyMiddleware);
 app.use('/api', userRouter);
 app.use('/api', registerRouter);
+app.use('/api', actorRouter);
 
 
 app.get('/', (req, res) => {

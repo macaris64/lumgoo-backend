@@ -8,6 +8,8 @@ interface IUser extends Document {
     fullname: string,
     createdAt: Date,
     modifiedAt: Date,
+    deletedAt?: Date,
+    isDeleted?: boolean,
     comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
@@ -47,6 +49,14 @@ const userSchema: Schema <IUser> = new mongoose.Schema({
     modifiedAt: {
         type: Date,
         default: Date.now
+    },
+    deletedAt: {
+        type: Date,
+        default: null
+    },
+    isDeleted: {
+        type: Boolean,
+        default: false
     }
 });
 
