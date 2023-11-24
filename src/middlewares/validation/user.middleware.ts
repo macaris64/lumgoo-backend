@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import {APIError} from "../../utils/errors";
 import {validateEmail} from "./validate.middleware";
+import {getSlug} from "../../utils/functions";
 
 export const validateRegistration = (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -27,6 +28,7 @@ export const validateRegistration = (req: Request, res: Response, next: NextFunc
         if (errors.length > 0) {
             throw new APIError(422, 'Validation error');
         }
+        req.body.slug = getSlug(username)
     } catch (error) {
         next(error);
     }

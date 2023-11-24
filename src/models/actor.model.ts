@@ -7,7 +7,7 @@ interface SocialMedia {
 
 export interface IActor extends Document {
     name: string;
-    slug: string;
+    slug?: string;
     movies?: string[];
     images?: string[];
     birthday?: Date;
@@ -28,7 +28,6 @@ export interface IActor extends Document {
 
 export const validatorObject: Object = {
     name: '',
-    slug: '',
 }
 
 const actorSchema: Schema<IActor> = new mongoose.Schema({
@@ -39,9 +38,9 @@ const actorSchema: Schema<IActor> = new mongoose.Schema({
     },
     slug: {
         type: String,
-        required: true,
         unique: true,
         lowercase: true,
+        default: null,
     },
     movies: {
         type: [String],

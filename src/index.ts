@@ -9,6 +9,7 @@ import actorRouter from './routes/actor.routes';
 
 import {errorHandler} from "./middlewares/errorHandler.middleware";
 import {apiKeyMiddleware} from "./middlewares/apiKey.middleware";
+import movieRoutes from "./routes/movie.routes";
 
 dotenv.config();
 const app = express();
@@ -21,6 +22,7 @@ app.use(apiKeyMiddleware);
 app.use('/api', userRouter);
 app.use('/api', registerRouter);
 app.use('/api', actorRouter);
+app.use('/api', movieRoutes);
 
 
 app.get('/', (req, res) => {

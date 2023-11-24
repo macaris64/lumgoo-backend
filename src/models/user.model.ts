@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt';
 
 interface IUser extends Document {
     username: string,
+    slug?: string,
     email: string,
     password: string,
     fullname: string,
@@ -16,6 +17,7 @@ interface IUser extends Document {
 export interface UserResponse {
     id: string,
     username: string,
+    slug?: string,
     email: string,
     fullname: string,
 }
@@ -24,6 +26,11 @@ const userSchema: Schema <IUser> = new mongoose.Schema({
     username: {
         type: String,
         required: true,
+        unique: true,
+        trim: true
+    },
+    slug: {
+        type: String,
         unique: true,
         trim: true
     },

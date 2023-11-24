@@ -2,7 +2,7 @@ interface CountryList {
     [key: string]: string;
 }
 
-const countryCodeNameList: CountryList = {
+export const countryCodeNameList: CountryList = {
   AD: 'Andorra',
   AE: 'United Arab Emirates',
   AF: 'Afghanistan',
@@ -255,7 +255,7 @@ const countryCodeNameList: CountryList = {
   ZW: 'Zimbabwe'
 }
 
-const countryCodeFlagList: CountryList = {
+export const countryCodeFlagList: CountryList = {
   AD: '🇦🇩',
   AE: '🇦🇪',
   AF: '🇦🇫',
@@ -508,7 +508,7 @@ const countryCodeFlagList: CountryList = {
   ZW: '🇿🇼'
 }
 
-const getCountryFlagByName = (value: string) => {
+export const getCountryFlagByName = (value: string) => {
     let result = null;
     Object.keys(countryCodeNameList).forEach(key => {
         if (countryCodeNameList[key] === value) {
@@ -518,7 +518,7 @@ const getCountryFlagByName = (value: string) => {
     return result;
 }
 
-const getCountryCodeByName = (value: string) => {
+export const getCountryCodeByName = (value: string) => {
     let result = null;
     Object.keys(countryCodeNameList).forEach(key => {
         if (countryCodeNameList[key] === value) {

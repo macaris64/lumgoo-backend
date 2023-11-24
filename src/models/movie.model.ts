@@ -2,14 +2,14 @@ import mongoose, {Document, Schema} from "mongoose";
 
 interface IMovie extends Document {
     title: string, // Title of the movie
-    slug: string, // Slug of the movie
-    genre: string[], // Genre of the movie
-    actors: string[], // Actors of the movie
-    imdbRating: number, // IMDB rating of the movie
-    director: string[], // Director of the movie
-    plot: string, // Plot of the movie
-    images: string[], // Images of the movie
-    releaseDate: Date, // Release date of the movie
+    slug?: string, // Slug of the movie
+    genre?: string[], // Genre of the movie
+    actors?: string[], // Actors of the movie
+    imdbRating?: number, // IMDB rating of the movie
+    director?: string[], // Director of the movie
+    plot?: string, // Plot of the movie
+    images?: string[], // Images of the movie
+    releaseDate?: Date, // Release date of the movie
     runtime?: number, // The duration of the movie, typically in minutes.
     country?: string, // The country or countries where the movie was produced.
     language?: string, // The language or languages spoken in the movie.
@@ -31,6 +31,12 @@ interface IMovie extends Document {
     streamingAvailability?: string[], // A URL pointing to a streaming version of the movie.
     createdAt: Date,
     modifiedAt: Date,
+    isDeleted?: boolean,
+    deletedAt?: Date,
+}
+
+export const validatorObject: Object = {
+    title: '',
 }
 
 const movieSchema: Schema <IMovie> = new mongoose.Schema({
@@ -41,94 +47,114 @@ const movieSchema: Schema <IMovie> = new mongoose.Schema({
     },
     slug: {
         type: String,
-        required: true,
         unique: true,
         lowercase: true,
+        default: null,
     },
     genre: {
         type: [String],
         required: true,
+        default: [],
     },
     actors: {
         type: [String],
-        required: true,
+        default: [],
     },
     imdbRating: {
         type: Number,
-        required: true,
+        default: 0,
     },
     director: {
         type: [String],
-        required: true,
+        default: [],
     },
     plot: {
         type: String,
-        required: true,
+        default: '',
     },
     images: {
         type: [String],
-        required: true,
+        default: [],
     },
     releaseDate: {
         type: Date,
-        required: true,
+        default: null,
     },
     runtime: {
         type: Number,
+        default: 0,
     },
     country: {
         type: String,
+        default: '',
     },
     language: {
         type: String,
+        default: '',
     },
     budget: {
         type: Number,
+        default: 0,
     },
     boxOffice: {
         type: Number,
+        default: 0,
     },
     mpaaRating: {
         type: String,
+        default: '',
     },
     userRating: {
         type: Number,
+        default: 0,
     },
     userReviews: {
         type: [String],
+        default: [],
     },
     awards: {
         type: [String],
+        default: [],
     },
     productionCompanies: {
         type: [String],
+        default: [],
     },
     distributionCompanies: {
         type: [String],
+        default: [],
     },
     officialWebsite: {
         type: String,
+        default: '',
     },
     trailerUrl: {
         type: String,
+        default: '',
     },
     screenplayBy: {
         type: [String],
+        default: [],
     },
     cinematographyBy: {
         type: [String],
+        default: [],
     },
     editedBy: {
         type: [String],
+        default: [],
     },
     musicBy: {
         type: [String],
+        default: [],
     },
     visualEffectsBy: {
         type: [String],
+        default: [],
     },
     streamingAvailability: {
         type: [String],
+        default: [],
     },
     createdAt: {
         type: Date,
@@ -137,6 +163,14 @@ const movieSchema: Schema <IMovie> = new mongoose.Schema({
     modifiedAt: {
         type: Date,
         default: Date.now
+    },
+    isDeleted: {
+        type: Boolean,
+        default: false,
+    },
+    deletedAt: {
+        type: Date,
+        default: null,
     },
 })
 

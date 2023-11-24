@@ -8,25 +8,7 @@ export const validateCreateActor = (req: Request, res: Response, next: NextFunct
     if (!validateParams(req.body, validatorObject)) {
         throw new APIError(422, 'Validation error');
     }
-
-    try {
-        const errors: string[] = [];
-        const {name} = req.body;
-
-        let {slug} = req.body;
-        delete req.body.slug;
-        req.body.slug = getSlug(name);
-        if (!name) {
-            errors.push('Name is required');
-        }
-
-        if (errors.length > 0) {
-            throw new APIError(422, 'Validation error');
-        }
-    } catch (error) {
-        next(error);
-    }
-
+    req.body.slug = getSlug(req.body.name);
     next();
 }
 
