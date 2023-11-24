@@ -1,7 +1,26 @@
-import { Request, Response, NextFunction } from 'express';
+import {NextFunction, Request, Response} from 'express';
 import {APIError} from "../../utils/errors";
 import {validateEmail} from "./validate.middleware";
 import {getSlug} from "../../utils/functions";
+import {verifyToken} from "../../utils/jwt.utils";
+import {TokenPayload} from "../../models/token.model";
+
+
+const validateToken = (token: string | undefined) => {
+    try {
+        if (!token) {
+            throw new APIError(401, 'Unauthorized')
+        }
+        const _token = token.split(' ');
+        if (_token[0] !== 'Bearer') {
+            throw new APIError(401, 'Unauthorized')
+        }
+        return verifyToken(_token[1])
+
+    } catch (error) {
+        throw error
+    }
+}
 
 export const validateRegistration = (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -88,4 +107,14 @@ export const validateUpdateUser = (req: Request, res: Response, next: NextFuncti
     delete req.body._id;
     delete req.body.password;
     next();
+}
+
+export const validateMe = (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const decodedToken = validateToken(req.headers.authorization) as TokenPayload;
+        req.body.userId = decodedToken.id;
+    } catch (error) {
+        next(error)
+    }
+    next()
 }

@@ -86,3 +86,29 @@ export const verify = async (req: Request, res: Response, next: NextFunction) =>
         next(error);
     }
 }
+
+export const me = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const userId = req.body.userId;
+        let _user;
+        try {
+            _user = await User.findOne({ _id: userId });
+            if (!_user) {
+                throw new APIError(404, 'User not found')
+            }
+        } catch (error) {
+            throw new APIError(500, 'Internal Server Error')
+        }
+
+        const user: UserResponse = {
+            id: userId,
+            username: _user.username,
+            email: _user.email,
+            fullname: _user.fullname,
+        }
+
+        res.status(200).json({user});
+    } catch (error) {
+        next(error);
+    }
+}

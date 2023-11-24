@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import {APIError} from "./errors";
 
 const secretKey = process.env.JWT_SECRET || 'your_secret_key';
 
@@ -7,5 +8,9 @@ export const generateToken = (userId: string) => {
 };
 
 export const verifyToken = (token: string) => {
-    return jwt.verify(token, secretKey);
+    try {
+        return jwt.verify(token, secretKey);
+    } catch (error) {
+        throw new APIError(401, 'Invalid Token');
+    }
 };
