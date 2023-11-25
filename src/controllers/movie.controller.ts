@@ -1,9 +1,9 @@
 import {NextFunction, Request, Response} from 'express';
 import Movie from '../models/movie.model';
-import Actor, {IActor} from '../models/actor.model';
 import mongoose from "mongoose";
 import {APIError} from "../utils/errors";
-import {getSlug} from "../utils/functions";
+import {getMovieRecommendationsFromAI, getMultipleMoviesDataFromAI} from "../utils/openai";
+import {transformMovieFilter, validateMovieFilterObject} from "../models/ai.model";
 
 export const createMovie = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -125,6 +125,59 @@ export const deleteMovie = async (req: Request, res: Response, next: NextFunctio
                 throw new APIError(500, 'Internal Server Error');
             }
         }
+    } catch (error) {
+        next(error);
+    }
+}
+
+export const getMovieRecommendationsFromOpenAI = async (req: Request, res: Response, next: NextFunction) => {
+    /* Example filter object
+        {
+            "filter": {
+                "name": ["interstellar", "tenet"],
+                "genre": ["dark humor"],
+                "actorName": [],
+                "releaseDate": [],
+                "director": [],
+                "country": []
+            }
+        }
+     */
+    try {
+        const filter = req.body.filter;
+        validateMovieFilterObject(filter)
+        const transformedFilter = transformMovieFilter(filter);
+        const aiResponse = await getMovieRecommendationsFromAI(transformedFilter).then((response) => {
+            res.status(200).json(response);
+        }).catch(error => {
+            next(error)
+        });
+        res.status(200).json(aiResponse);
+    } catch (error) {
+        next(error);
+    }
+}
+
+export const getMultipleMovieDataFromOpenAI = async (req: Request, res: Response, next: NextFunction) => {
+    /*
+        {
+            "movieTitles": ["Interstellar"]
+        }
+     */
+    try {
+        const movieTitles = req.body.movieTitles as string[];
+        if (!movieTitles) {
+            throw new APIError(400, 'Movie titles array is required');
+        }
+        if (movieTitles.length === 0) {
+            throw new APIError(400, 'Movie titles array is empty');
+        }
+        const aiResponse = await getMultipleMoviesDataFromAI(movieTitles).then((response) => {
+            res.status(200).json(response);
+        }).catch(error => {
+            next(error)
+        });
+        res.status(200).json(aiResponse);
     } catch (error) {
         next(error);
     }
