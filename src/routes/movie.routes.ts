@@ -13,4 +13,6 @@ router.delete('/movies/:id', movieController.deleteMovie);
 router.post('/ai/movie-recommendations', movieController.getMovieRecommendationsFromOpenAI);
 router.post('/ai/movies-data', movieController.getMultipleMovieDataFromOpenAI);
 
+router.get('/movie-search', movieController.searchMovie);
+
 export default router;

@@ -177,6 +177,9 @@ export const getMultipleMovieDataFromOpenAI = async (req: Request, res: Response
 
         const processAiResponse = async (aiResponse: any) => {
             try {
+                if (!aiResponse || !aiResponse.data || aiResponse.data.length === 0) {
+                    throw new APIError(404, 'No movies found');
+                }
                 await Promise.all(aiResponse.data.map(processMovieAI))
             } catch (error) {
                 next(error)
@@ -185,6 +188,43 @@ export const getMultipleMovieDataFromOpenAI = async (req: Request, res: Response
         await processAiResponse(aiResponse)
 
         res.status(200).json(aiResponse);
+    } catch (error) {
+        next(error);
+    }
+}
+
+export const searchMovie = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const {
+            keyword,
+            genreId,
+            actorId
+        } = req.query;
+
+        const page = parseInt(req.query.page as string);
+        const limit = parseInt(req.query.limit as string);
+        const skipIndex = (page - 1) * limit;
+        const searchQuery: any = {};
+        if (keyword) {
+            searchQuery['title'] = { $regex: new RegExp(keyword as string, 'i') };
+        }
+        if (genreId) {
+            const genreIdArray = Array.isArray(genreId) ? genreId : [genreId];
+            searchQuery['genre'] = { $in: genreIdArray };
+        }
+        if (actorId) {
+            const actorIdArray = Array.isArray(actorId) ? actorId : [actorId];
+            searchQuery['actors.actorId'] = { $in: actorIdArray };
+        }
+        try {
+            const movies = await Movie.find(searchQuery).limit(limit).skip(skipIndex);
+            if (!movies || movies.length === 0) {
+                throw new APIError(404, 'No movies found');
+            }
+            res.status(200).json(movies);
+        } catch (error) {
+            throw new APIError(500, 'Internal Server Error');
+        }
     } catch (error) {
         next(error);
     }
