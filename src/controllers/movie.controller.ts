@@ -1,37 +1,19 @@
 import {NextFunction, Request, Response} from 'express';
-import Movie from '../models/movie.model';
+import Movie, {IMovie} from '../models/movie.model';
 import mongoose from "mongoose";
 import {APIError} from "../utils/errors";
 import {getMovieRecommendationsFromAI, getMultipleMoviesDataFromAI} from "../utils/openai";
 import {transformMovieFilter, validateMovieFilterObject} from "../models/ai.model";
+import {createOrUpdateMovie} from "../utils/db/movie";
 
 export const createMovie = async (req: Request, res: Response, next: NextFunction) => {
+    let movie;
     try {
-        const existingMovie = await Movie.findOne({
-            $or: [
-                { title: req.body.title },
-                { slug: req.body.slug }
-            ]
-        });
-        if (existingMovie) {
-            throw new APIError(409, 'Movie already exists');
-        }
-
-        let movie = new Movie(req.body);
-        try {
-            await movie.save();
-            res.status(201).json(movie);
-        } catch (error) {
-            if (error instanceof mongoose.Error.ValidationError) {
-                throw new APIError(422, 'Validation Error');
-            } else if (error instanceof mongoose.Error) {
-                throw new APIError(500, 'Internal Server Error');
-            }
-        }
-        res.status(201).json(movie);
+        movie = await createOrUpdateMovie(req.body);
     } catch (error) {
-        next(error);
+        next(error)
     }
+    res.status(201).json(movie);
 }
 
 export const getAllMovies = async (req: Request, res: Response, next: NextFunction) => {
@@ -147,11 +129,20 @@ export const getMovieRecommendationsFromOpenAI = async (req: Request, res: Respo
         const filter = req.body.filter;
         validateMovieFilterObject(filter)
         const transformedFilter = transformMovieFilter(filter);
-        const aiResponse = await getMovieRecommendationsFromAI(transformedFilter).then((response) => {
-            res.status(200).json(response);
-        }).catch(error => {
+        const aiResponse = await getMovieRecommendationsFromAI(transformedFilter).catch(error => {
             next(error)
         });
+        let movie;
+        for (const title of Object.values(aiResponse)) {
+            movie = {
+                title: title,
+            }
+            try {
+                await createOrUpdateMovie(movie)
+            } catch (error) {
+                next(error)
+            }
+        }
         res.status(200).json(aiResponse);
     } catch (error) {
         next(error);
@@ -172,11 +163,31 @@ export const getMultipleMovieDataFromOpenAI = async (req: Request, res: Response
         if (movieTitles.length === 0) {
             throw new APIError(400, 'Movie titles array is empty');
         }
-        const aiResponse = await getMultipleMoviesDataFromAI(movieTitles).then((response) => {
-            res.status(200).json(response);
-        }).catch(error => {
+        const aiResponse = await getMultipleMoviesDataFromAI(movieTitles).catch(error => {
             next(error)
         });
+        let movie;
+
+        aiResponse.data.map(async(_movie: any) => {
+            movie = {
+                title: _movie.name,
+                genre: _movie.genre,
+                imdbId: _movie.imdbId,
+                releaseDate: _movie.year,
+                imdbRating: _movie.imdbRating,
+                director: _movie.director,
+                plot: _movie.plot,
+                runtime: _movie.runtime,
+                country: _movie.country,
+                musicBy: _movie.musicBy,
+                streamingAvailability: _movie.platformAndLinks,
+            }
+            try {
+                await createOrUpdateMovie(movie)
+            } catch (error) {
+                next(error)
+            }
+        })
         res.status(200).json(aiResponse);
     } catch (error) {
         next(error);

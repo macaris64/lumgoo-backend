@@ -2,7 +2,6 @@ import {NextFunction, Request, Response} from "express";
 import {validateParams} from "./validate.middleware";
 import {validatorObject} from "../../models/movie.model";
 import {APIError} from "../../utils/errors";
-import {getSlug} from "../../utils/functions";
 
 export const validateCreateMovie = (req: Request, res: Response, next: NextFunction) => {
     if (!validateParams(req.body, validatorObject)) {
@@ -15,7 +14,6 @@ export const validateCreateMovie = (req: Request, res: Response, next: NextFunct
         if (!title) {
             errors.push('Title is required');
         }
-        req.body.slug = getSlug(title);
         if (errors.length > 0) {
             throw new APIError(422, 'Validation error');
         }

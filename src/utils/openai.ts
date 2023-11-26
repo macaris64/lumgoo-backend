@@ -9,15 +9,30 @@ import {APIError} from "./errors";
 
 export async function getMovieRecommendationsFromAI(filter: string): Promise<any> {
     try {
-        return await chatCompletionsApi(getMovieRecommendationsForGivenFiltersSystemMessage, filter, 3000)
+        const aiResponse = await chatCompletionsApi(
+            getMovieRecommendationsForGivenFiltersSystemMessage,
+            filter,
+            3000,
+            'gpt-3.5-turbo',
+            false
+        )
+
+        const jsonString = aiResponse.replace(/'/g, '"');
+        return JSON.parse(jsonString);
     } catch (error) {
         throw error;
     }
 }
 
+
 export async function getMultipleMoviesDataFromAI(movieTitles: string[]): Promise<any> {
     try {
-        return await chatCompletionsApi(getMovieDataForGivenMovieTitlesSystemMessage, movieTitles.join(", "), 3600)
+        const aiResponse = await chatCompletionsApi(
+            getMovieDataForGivenMovieTitlesSystemMessage,
+            movieTitles.join(", "),
+            3600
+        )
+        return JSON.parse(aiResponse);
     } catch (error) {
         throw error;
     }
@@ -45,10 +60,8 @@ const chatCompletionsApi = async (
             max_tokens: maxTokens,
         });
     } catch (error) {
-        console.error("Failed to call OpenAI:", error);
         throw new APIError(500, "Failed to call OpenAI");
     }
-    console.log(response);
     try {
         if (response &&
             response.choices &&
@@ -56,11 +69,7 @@ const chatCompletionsApi = async (
             response.choices[0].message &&
             response.choices[0].message.content
         ) {
-            let aiData = response.choices[0].message.content
-            if (json) {
-                return JSON.parse(aiData.replace(/'([^']+)'/g, '"$1"'));
-            }
-            return aiData;
+            return response.choices[0].message.content;
         }
     } catch (error) {
         throw new APIError(500, "Invalid response format from OpenAI");

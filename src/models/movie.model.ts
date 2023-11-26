@@ -1,8 +1,9 @@
 import mongoose, {Document, Schema} from "mongoose";
 
-interface IMovie extends Document {
+export interface IMovie extends Document {
     title: string, // Title of the movie
     slug?: string, // Slug of the movie
+    imdbId?: string, // IMDB ID of the movie
     genre?: string[], // Genre of the movie
     actors?: string[], // Actors of the movie
     imdbRating?: number, // IMDB rating of the movie
@@ -10,8 +11,8 @@ interface IMovie extends Document {
     plot?: string, // Plot of the movie
     images?: string[], // Images of the movie
     releaseDate?: Date, // Release date of the movie
-    runtime?: number, // The duration of the movie, typically in minutes.
-    country?: string, // The country or countries where the movie was produced.
+    runtime?: string, // The duration of the movie, typically in minutes.
+    country?: string[], // The country or countries where the movie was produced.
     language?: string, // The language or languages spoken in the movie.
     budget?: number, // The budget involved in the production of the movie.
     boxOffice?: number, // The box office revenue of the movie.
@@ -28,7 +29,7 @@ interface IMovie extends Document {
     editedBy?: string[], // The person or people who edited the movie.
     musicBy?: string[], // The person or people who composed the movie's music.
     visualEffectsBy?: string[], // The person or people who were in charge of the visual effects of the movie.
-    streamingAvailability?: string[], // A URL pointing to a streaming version of the movie.
+    streamingAvailability?: object, // A URL pointing to a streaming version of the movie.
     createdAt: Date,
     modifiedAt: Date,
     isDeleted?: boolean,
@@ -49,6 +50,11 @@ const movieSchema: Schema <IMovie> = new mongoose.Schema({
         type: String,
         unique: true,
         lowercase: true,
+        default: null,
+    },
+    imdbId: {
+        type: String,
+        unique: true,
         default: null,
     },
     genre: {
@@ -81,12 +87,12 @@ const movieSchema: Schema <IMovie> = new mongoose.Schema({
         default: null,
     },
     runtime: {
-        type: Number,
-        default: 0,
-    },
-    country: {
         type: String,
         default: '',
+    },
+    country: {
+        type: [String],
+        default: [],
     },
     language: {
         type: String,
@@ -153,8 +159,8 @@ const movieSchema: Schema <IMovie> = new mongoose.Schema({
         default: [],
     },
     streamingAvailability: {
-        type: [String],
-        default: [],
+        type: {},
+        default: {},
     },
     createdAt: {
         type: Date,
