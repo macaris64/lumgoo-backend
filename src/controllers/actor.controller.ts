@@ -2,32 +2,16 @@ import {NextFunction, Request, Response} from 'express';
 import Actor from '../models/actor.model';
 import mongoose from "mongoose";
 import {APIError} from "../utils/errors";
+import {createOrUpdateActor} from "../utils/db/actor";
 
 export const createActor = async (req: Request, res: Response, next: NextFunction) => {
+    let actor;
     try {
-        const existingActor = await Actor.findOne({
-            $or: [
-                { name: req.body.name },
-                { slug: req.body.slug }
-            ]
-        });
-        if (existingActor) {
-            throw new APIError(409, 'Actor already exists');
-        }
-        let actor = new Actor(req.body);
-        try {
-            await actor.save();
-            res.status(201).json(actor);
-        } catch (error) {
-            if (error instanceof mongoose.Error.ValidationError) {
-                throw new APIError(422, 'Validation Error');
-            } else if (error instanceof mongoose.Error) {
-                throw new APIError(500, 'Internal Server Error');
-            }
-        }
+        actor = await createOrUpdateActor(req.body);
     } catch (error) {
-        next(error);
+        next(error)
     }
+    res.status(201).json(actor);
 }
 
 export const getAllActors = async (req: Request, res: Response, next: NextFunction) => {

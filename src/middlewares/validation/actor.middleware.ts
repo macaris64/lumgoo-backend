@@ -8,7 +8,6 @@ export const validateCreateActor = (req: Request, res: Response, next: NextFunct
     if (!validateParams(req.body, validatorObject)) {
         throw new APIError(422, 'Validation error');
     }
-    req.body.slug = getSlug(req.body.name);
     next();
 }
 
