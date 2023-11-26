@@ -4,7 +4,8 @@ import mongoose from "mongoose";
 import {APIError} from "../utils/errors";
 import {getMovieRecommendationsFromAI, getMultipleMoviesDataFromAI} from "../utils/openai";
 import {transformMovieFilter, validateMovieFilterObject} from "../models/ai.model";
-import {createOrUpdateMovie} from "../utils/db/movie";
+import {createOrUpdateMovie, processMovieAI} from "../utils/db/movie";
+import {createOrUpdateActor} from "../utils/db/actor";
 
 export const createMovie = async (req: Request, res: Response, next: NextFunction) => {
     let movie;
@@ -168,26 +169,15 @@ export const getMultipleMovieDataFromOpenAI = async (req: Request, res: Response
         });
         let movie;
 
-        aiResponse.data.map(async(_movie: any) => {
-            movie = {
-                title: _movie.name,
-                genre: _movie.genre,
-                imdbId: _movie.imdbId,
-                releaseDate: _movie.year,
-                imdbRating: _movie.imdbRating,
-                director: _movie.director,
-                plot: _movie.plot,
-                runtime: _movie.runtime,
-                country: _movie.country,
-                musicBy: _movie.musicBy,
-                streamingAvailability: _movie.platformAndLinks,
-            }
+        const processAiResponse = async (aiResponse: any) => {
             try {
-                await createOrUpdateMovie(movie)
+                await Promise.all(aiResponse.data.map(processMovieAI))
             } catch (error) {
                 next(error)
             }
-        })
+        }
+        await processAiResponse(aiResponse)
+
         res.status(200).json(aiResponse);
     } catch (error) {
         next(error);

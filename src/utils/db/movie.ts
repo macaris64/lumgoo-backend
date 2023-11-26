@@ -1,7 +1,8 @@
-import Movie, {IMovie} from "../../models/movie.model";
+import Movie from "../../models/movie.model";
 import {getSlug} from "../functions";
 import {APIError} from "../errors";
 import mongoose from "mongoose";
+import {processActorsAI} from "./actor";
 
 export const createOrUpdateMovie = async (movieObject: any) => {
     if (!movieObject) {
@@ -40,4 +41,46 @@ export const createOrUpdateMovie = async (movieObject: any) => {
             throw new APIError(500, 'Internal Server Error');
         }
     }
+}
+
+export const processMovieAI = async (_movie: any) => {
+    const movie = {
+        title: _movie.name,
+        genre: _movie.genre,
+        imdbId: _movie.imdbId,
+        releaseDate: _movie.year,
+        imdbRating: _movie.imdbRating,
+        director: _movie.director,
+        plot: _movie.plot,
+        runtime: _movie.runtime,
+        country: _movie.country,
+        musicBy: _movie.musicBy,
+        streamingAvailability: _movie.platformAndLinks,
+    }
+
+    try {
+        const createdOrUpdatedMovie = await createOrUpdateMovie(movie);
+        if (!createdOrUpdatedMovie) {
+            throw new Error(`Failed to create or update movie: ${_movie.name}`);
+        }
+        const actorLinks = await processActorsAI(_movie.actors);
+        if (createdOrUpdatedMovie.actors && actorLinks.length > createdOrUpdatedMovie.actors.length)
+            await updateMovieWithActors(createdOrUpdatedMovie, actorLinks);
+    } catch (error) {
+        // Proper error handling
+        console.error(error);
+        // If you are within an Express middleware, you can call next(error) here
+    }
+}
+
+
+const updateMovieWithActors = async (movie: any, actorLinks: any) => {
+    const movieActors = actorLinks.map((actorLink: any) => {
+        return {
+            actorId: actorLink.actor_id,
+            characterName: actorLink.character,
+        }
+    });
+    movie.actors = movieActors;
+    await movie.save();
 }

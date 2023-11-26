@@ -5,7 +5,7 @@ export interface IMovie extends Document {
     slug?: string, // Slug of the movie
     imdbId?: string, // IMDB ID of the movie
     genre?: string[], // Genre of the movie
-    actors?: string[], // Actors of the movie
+    actors?: [{ actorId: string, characterName: string}], // Actors of the movie
     imdbRating?: number, // IMDB rating of the movie
     director?: string[], // Director of the movie
     plot?: string, // Plot of the movie
@@ -63,7 +63,7 @@ const movieSchema: Schema <IMovie> = new mongoose.Schema({
         default: [],
     },
     actors: {
-        type: [String],
+        type: [Object],
         default: [],
     },
     imdbRating: {

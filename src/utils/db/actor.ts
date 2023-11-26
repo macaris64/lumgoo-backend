@@ -41,3 +41,17 @@ export const createOrUpdateActor = async (actorObject: any) => {
         }
     }
 }
+
+export const processActorsAI = async (actors: any[]) => {
+    const actorPromises = Object.entries(actors).map(async ([actorName, character]) => {
+        try {
+            const actor = await createOrUpdateActor({ name: actorName });
+            return { actor_id: actor?.id, character };
+        } catch (error) {
+            // Handle errors specifically for actor processing
+            throw new Error(`Error processing actor: ${actorName}, ${error}`);
+        }
+    });
+
+    return Promise.all(actorPromises);
+}
