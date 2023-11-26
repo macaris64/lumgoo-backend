@@ -54,8 +54,7 @@ const movieSchema: Schema <IMovie> = new mongoose.Schema({
     },
     imdbId: {
         type: String,
-        unique: true,
-        default: null,
+        default: "",
     },
     genre: {
         type: [String],

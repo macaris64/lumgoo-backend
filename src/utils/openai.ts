@@ -1,16 +1,19 @@
 import {OpenAI} from "openai";
 import {
     getMovieDataForGivenMovieTitlesSystemMessage,
-    getMovieRecommendationsForGivenFiltersSystemMessage
+    getMovieRecommendationsForGivenFiltersSystemMessage, getSlimMovieRecommendationsForGivenFiltersSystemMessage
 } from "./constants";
 
 import {APIError} from "./errors";
 
 
-export async function getMovieRecommendationsFromAI(filter: string): Promise<any> {
+export async function getMovieRecommendationsFromAI(filter: string, slim: boolean): Promise<any> {
     try {
+        const systemMessage = slim ?
+            getSlimMovieRecommendationsForGivenFiltersSystemMessage :
+            getMovieRecommendationsForGivenFiltersSystemMessage;
         const aiResponse = await chatCompletionsApi(
-            getMovieRecommendationsForGivenFiltersSystemMessage,
+            systemMessage,
             filter,
             3000,
             'gpt-3.5-turbo',

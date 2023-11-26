@@ -3,6 +3,7 @@ import {getSlug} from "../functions";
 import {APIError} from "../errors";
 import mongoose from "mongoose";
 import {processActorsAI} from "./actor";
+import {processGenresAI} from "./genre";
 
 export const createOrUpdateMovie = async (movieObject: any) => {
     if (!movieObject) {
@@ -35,6 +36,7 @@ export const createOrUpdateMovie = async (movieObject: any) => {
             return newMovie
         }
     } catch (error) {
+        console.log(error)
         if (error instanceof mongoose.Error.ValidationError) {
             throw new APIError(422, 'Validation Error');
         } else {
@@ -46,7 +48,6 @@ export const createOrUpdateMovie = async (movieObject: any) => {
 export const processMovieAI = async (_movie: any) => {
     const movie = {
         title: _movie.name,
-        genre: _movie.genre,
         imdbId: _movie.imdbId,
         releaseDate: _movie.year,
         imdbRating: _movie.imdbRating,
@@ -63,9 +64,14 @@ export const processMovieAI = async (_movie: any) => {
         if (!createdOrUpdatedMovie) {
             throw new Error(`Failed to create or update movie: ${_movie.name}`);
         }
+
         const actorLinks = await processActorsAI(_movie.actors);
         if (createdOrUpdatedMovie.actors && actorLinks.length > createdOrUpdatedMovie.actors.length)
             await updateMovieWithActors(createdOrUpdatedMovie, actorLinks);
+
+        const genreIds = await processGenresAI(_movie.genre);
+        if (createdOrUpdatedMovie.genre && genreIds.length > createdOrUpdatedMovie.genre.length)
+            await updateMovieWithGenres(createdOrUpdatedMovie, genreIds)
     } catch (error) {
         // Proper error handling
         console.error(error);
@@ -82,5 +88,10 @@ const updateMovieWithActors = async (movie: any, actorLinks: any) => {
         }
     });
     movie.actors = movieActors;
+    await movie.save();
+}
+
+const updateMovieWithGenres = async (movie: any, genreIds: any) => {
+    movie.genre = genreIds;
     await movie.save();
 }

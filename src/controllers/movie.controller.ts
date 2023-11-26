@@ -127,12 +127,18 @@ export const getMovieRecommendationsFromOpenAI = async (req: Request, res: Respo
         }
      */
     try {
-        const filter = req.body.filter;
-        validateMovieFilterObject(filter)
-        const transformedFilter = transformMovieFilter(filter);
-        const aiResponse = await getMovieRecommendationsFromAI(transformedFilter).catch(error => {
+        const slim = req.body.slim;
+        let filter = req.body.filter;
+        if (!slim) {
+            validateMovieFilterObject(filter)
+            filter = transformMovieFilter(filter);
+        }
+        const aiResponse = await getMovieRecommendationsFromAI(filter, slim).catch(error => {
             next(error)
         });
+        if (!aiResponse) {
+            throw new APIError(404, 'No movies found');
+        }
         let movie;
         for (const title of Object.values(aiResponse)) {
             movie = {
