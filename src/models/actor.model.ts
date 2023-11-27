@@ -8,10 +8,11 @@ interface SocialMedia {
 export interface IActor extends Document {
     name: string;
     slug?: string;
-    movies?: string[];
+    tmdbId?: string;
+    imdbId?: string;
     images?: string[];
     birthday?: Date;
-    country?: string;
+    country?: string[],
     height?: number;
     awards?: string[];
     bio?: string;
@@ -42,10 +43,13 @@ const actorSchema: Schema<IActor> = new mongoose.Schema({
         lowercase: true,
         default: null,
     },
-    movies: {
-        type: [String],
-        required: true,
-        default: [],
+    tmdbId: {
+        type: String,
+        default: "",
+    },
+    imdbId: {
+        type: String,
+        default: "",
     },
     images: {
         type: [String],
@@ -56,8 +60,8 @@ const actorSchema: Schema<IActor> = new mongoose.Schema({
         default: null
     },
     country: {
-        type: String,
-        default: null
+        type: [String],
+        default: [],
     },
     height: {
         type: Number,

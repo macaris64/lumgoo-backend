@@ -55,3 +55,20 @@ export const processActorsAI = async (actors: any[]) => {
 
     return Promise.all(actorPromises);
 }
+
+export const getActorByName = async (name: string) => {
+    if (!name) {
+        throw new Error('Actor name is required');
+    }
+
+    try {
+         const actor = await Actor.findOne({name: name});
+         if (!actor) {
+             return await createOrUpdateActor({name: name});
+         }
+         return actor;
+    } catch (error) {
+        throw new APIError(500, 'Internal Server Error');
+    }
+
+}

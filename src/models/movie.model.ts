@@ -4,6 +4,7 @@ export interface IMovie extends Document {
     title: string, // Title of the movie
     slug?: string, // Slug of the movie
     imdbId?: string, // IMDB ID of the movie
+    tmdbId?: string, // TMDB ID of the movie
     genre?: string[], // Genre of the movie
     actors?: [{ actorId: string, characterName: string}], // Actors of the movie
     imdbRating?: number, // IMDB rating of the movie
@@ -13,7 +14,7 @@ export interface IMovie extends Document {
     releaseDate?: Date, // Release date of the movie
     runtime?: string, // The duration of the movie, typically in minutes.
     country?: string[], // The country or countries where the movie was produced.
-    language?: string, // The language or languages spoken in the movie.
+    language?: string[], // The language or languages spoken in the movie.
     budget?: number, // The budget involved in the production of the movie.
     boxOffice?: number, // The box office revenue of the movie.
     mpaaRating?: string, // The age rating according to the Motion Picture Association of America (MPAA), if applicable.
@@ -56,6 +57,10 @@ const movieSchema: Schema <IMovie> = new mongoose.Schema({
         type: String,
         default: "",
     },
+    tmdbId: {
+        type: String,
+        default: "",
+    },
     genre: {
         type: [String],
         required: true,
@@ -94,8 +99,8 @@ const movieSchema: Schema <IMovie> = new mongoose.Schema({
         default: [],
     },
     language: {
-        type: String,
-        default: '',
+        type: [String],
+        default: [],
     },
     budget: {
         type: Number,

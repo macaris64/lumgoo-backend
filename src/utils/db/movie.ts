@@ -79,7 +79,6 @@ export const processMovieAI = async (_movie: any) => {
     }
 }
 
-
 const updateMovieWithActors = async (movie: any, actorLinks: any) => {
     const movieActors = actorLinks.map((actorLink: any) => {
         return {

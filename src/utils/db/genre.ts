@@ -57,6 +57,22 @@ export const getGenreByName = async (name: string) => {
     }
 }
 
+export const getGenreByTmdbId = async (tmdbId: number) => {
+    if (!tmdbId) {
+        throw new Error('Genre TMDB ID is required');
+    }
+
+    try {
+        const genre = await Genre.findOne({theMovieDbId: tmdbId});
+        if (!genre) {
+            return await createOrUpdateGenre({tmdbId: tmdbId});
+        }
+        return genre;
+    } catch (error) {
+        throw new APIError(500, 'Internal Server Error');
+    }
+}
+
 export const processGenresAI = async (genres: string[]) => {
     const genreIds = [];
     for (const genreName of genres) {

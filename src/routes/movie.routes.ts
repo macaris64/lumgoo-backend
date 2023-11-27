@@ -14,5 +14,6 @@ router.post('/ai/movie-recommendations', movieController.getMovieRecommendations
 router.post('/ai/movies-data', movieController.getMultipleMovieDataFromOpenAI);
 
 router.get('/movie-search', movieController.searchMovie);
+router.get('/tmdb/now-playing', movieController.getNowPlayingMovies);
 
 export default router;
