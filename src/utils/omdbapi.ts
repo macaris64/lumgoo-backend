@@ -20,8 +20,8 @@ class OmdbApi {
         try {
             const response = await axios.get(endpointUrl, {
                 params: {
-                    apikey: this.apiKey,
                     i: imdbId,
+                    apikey: this.apiKey,
                 },
             });
             if (response.data.Response == 'False') {
