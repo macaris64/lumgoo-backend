@@ -9,6 +9,7 @@ import TmdbApi from "../utils/themovieapi";
 import {getSlug} from "../utils/functions";
 import {getGenreByName, getGenreByTmdbId} from "../utils/db/genre";
 import {createOrUpdateActor} from "../utils/db/actor";
+import OmdbApi from "../utils/omdbapi";
 
 export const createMovie = async (req: Request, res: Response, next: NextFunction) => {
     let movie;
@@ -318,6 +319,43 @@ export const getNowPlayingMovies = async (req: Request, res: Response, next: Nex
                         next(error);
                     }
                 })
+            }
+        }
+        res.status(200).json({});
+    } catch (error) {
+        next(error);
+    }
+}
+
+export const setMovieImdbRatingAndImage = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const limit = parseInt(req.query.limit as string);
+        const movies = await Movie.find({imdbRating: 0}).limit(limit);
+        for (const movie of movies) {
+            const movieApi = new OmdbApi();
+            if (!movie.imdbId) {
+                console.log("Movie has not imdbId: " + movie.title)
+                movie.imdbRating = -3;
+                await movie.save();
+            } else {
+                const movieByIdApiResponse = await movieApi.fetchMovieByImdbId(movie.imdbId as string);
+                if (movieByIdApiResponse) {
+                    if (movieByIdApiResponse.imdbRating != "N/A" ) {
+                        movie.imdbRating = Number(movieByIdApiResponse.imdbRating);
+                    } else {
+                        console.log("Movie has not imdbRating on OmdbApi: " + movie.title)
+                        movie.imdbRating = -1;
+                    }
+                    if (movieByIdApiResponse.Poster) {
+                        movie.images = [movieByIdApiResponse.Poster];
+                    }
+                    await movie.save();
+                }
+                else {
+                    console.log("Movie not found on OmdbApi: " + movie.title);
+                    movie.imdbRating = -2;
+                    await movie.save();
+                }
             }
         }
         res.status(200).json({});

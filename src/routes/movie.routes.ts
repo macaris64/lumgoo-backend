@@ -3,6 +3,7 @@ const router = express.Router();
 
 import * as movieController from '../controllers/movie.controller';
 import {validateCreateMovie, validateUpdateMovie} from "../middlewares/validation/movie.middleware";
+import {setMovieImdbRatingAndImage} from "../controllers/movie.controller";
 
 router.post('/movies', validateCreateMovie, movieController.createMovie);
 router.get('/movies', movieController.getAllMovies);
@@ -15,5 +16,6 @@ router.post('/ai/movies-data', movieController.getMultipleMovieDataFromOpenAI);
 
 router.get('/movie-search', movieController.searchMovie);
 router.get('/tmdb/now-playing', movieController.getNowPlayingMovies);
+router.get('/omdb/set-imdb-values', movieController.setMovieImdbRatingAndImage);
 
 export default router;
