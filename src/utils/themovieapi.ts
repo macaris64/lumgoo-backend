@@ -6,7 +6,7 @@ class TmdbApi {
     private baseUrl?: string;
     private language: string;
     private token?: string;
-    private requestDelay: number = 2000;
+    private requestDelay: number = 15000;
     constructor() {
         this.apiKey = process.env.THE_MOVIE_DB_API_KEY;
         this.baseUrl = process.env.THE_MOVIE_DB_HOST;
@@ -48,6 +48,18 @@ class TmdbApi {
             return await this.fetchData(endpoint, params);
         } catch (error) {
             throw new APIError(500, 'Failed to get now playing movies');
+        }
+    }
+
+    public async getTopRatedMovies(page: string) {
+        try {
+            const endpoint = "movie/top_rated";
+            const params = {
+                page: page
+            }
+            return await this.fetchData(endpoint, params);
+        } catch (error) {
+            throw new APIError(500, 'Failed to get top rated movies');
         }
     }
 

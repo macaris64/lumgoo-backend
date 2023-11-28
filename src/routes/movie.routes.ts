@@ -16,6 +16,7 @@ router.post('/ai/movies-data', movieController.getMultipleMovieDataFromOpenAI);
 
 router.get('/movie-search', movieController.searchMovie);
 router.get('/tmdb/now-playing', movieController.getNowPlayingMovies);
+router.get('/tmdb/top-rated', movieController.getTopRatedMovies);
 router.get('/omdb/set-imdb-values', movieController.setMovieImdbRatingAndImage);
 
 export default router;
